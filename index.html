@@ -276,6 +276,8 @@ function renderChapter(id){
     `<main class="wrap chapter"><div class="band"></div>
      <p class="label">${esc(c.label)}</p><h1>${esc(t.main)}</h1>${t.orig?`<p class="orig">${esc(t.orig)}</p>`:'<div class="gap"></div>'}
      <div class="body">${blocksHTML(c.body)}${boxesHTML(c.boxes)}</div>${nextHTML(id)}</main>`;
+  // 終章に達したら、進み具合を自動的に消す（次に開いたときは最初から）
+  if(id===MAIN[MAIN.length-1]){ S = {last:null, read:[]}; save(); }
 }
 const RESET = `<p class="reset-wrap"><button class="reset" data-reset="1">進み具合を消して、最初からにする</button></p>`;
 function prevHTML(id){
@@ -288,9 +290,8 @@ function nextHTML(id){
   const nx = MAIN[MAIN.indexOf(id)+1];
   if(!nx){
     return `<div class="next"><p style="margin:0 0 6px">ここで標準版はおしまいです。演奏会で、第1楽章のあの旋律を追いかけてみてください。</p>
-      <button class="btn" data-done="${id}" data-go="quick"><span>クイック版でおさらい<small>開演前に、旋律の変化を見返す</small></span>${ICON.next}</button>
-      ${prevHTML(id)}
-      <button class="btn ghost" data-done="${id}" data-go="home"><span>はじめの画面へ</span>${ICON.next}</button></div>${RESET}`;
+      <button class="btn" data-go="home"><span>はじめの画面へ</span>${ICON.next}</button>
+      ${prevHTML(id)}</div>`;
   }
   const n = byId[nx];
   return `<div class="next"><button class="btn" data-done="${id}" data-go="c/${nx}"><span>次へ<small>${esc(n.label)}　${esc(shortName(n))}</small></span>${ICON.next}</button>${prevHTML(id)}</div>${RESET}`;
