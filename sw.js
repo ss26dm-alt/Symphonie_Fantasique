@@ -1,6 +1,6 @@
 // 幻想交響曲 事前学習アプリ — オフライン用 Service Worker
 // 一度開いた端末では、通信がなくてもアプリを開き直せるようにする。
-const CACHE = "fantastique-88c1b00313";
+const CACHE = "fantastique-c7f529ea1e";
 const FILES = ["./", "./index.html"];
 
 self.addEventListener("install", (e) => {
