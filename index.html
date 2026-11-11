@@ -145,6 +145,9 @@ h1{font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.45;marg
 .gstop{display:block;width:100%;border:0;border-radius:14px;background:#2a2622;color:#fffdf8;font-size:17px;font-weight:600;padding:16px}
 .gplay{display:inline-block;margin-top:10px;border:0;background:none;color:#8a8076;font-size:13px;padding:8px 12px;text-decoration:underline}
 
+.upd{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:15;max-width:536px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--ink);color:var(--bg);border-radius:14px;padding:10px 10px 10px 16px;font-size:14px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.upd button{border:0;border-radius:10px;background:var(--bg);color:var(--ink);font-size:14px;font-weight:600;padding:8px 14px;flex:none}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:30}
 .toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){body,.top,.sheet{transition:none}}
@@ -431,12 +434,48 @@ function route(){
 }
 window.addEventListener("hashchange", ()=>{ route(); window.scrollTo(0,0); });
 document.getElementById("parentimg").src = EXTRA.kyoso3;
-document.getElementById("ver").textContent = "版：2026-11-11 22:24" + (TEST_CONCERT ? "　試験モード（本番時間帯として動作中）" : "");
+document.getElementById("ver").textContent = "版：2026-11-11 22:42" + (TEST_CONCERT ? "　試験モード（本番時間帯として動作中）" : "");
 route();
 
-/* ---------- オフライン ---------- */
+/* ---------- オフラインと更新 ---------- */
+// 端末に保存した版をすぐ出し、裏で version.json を見て新しい版があれば知らせる。押すと切り替える。
+const APP_VER = "3e2eb91454";
 if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
+  setTimeout(checkUpdate, 1500);
+}
+async function checkUpdate(){
+  try{
+    const ctl = new AbortController(); setTimeout(()=>ctl.abort(), 6000);
+    const res = await fetch("version.json", {cache:"no-store", signal:ctl.signal});
+    const info = await res.json();
+    if(info && info.v && info.v !== APP_VER) showUpdate();
+  }catch(e){ /* 通信できない・ログイン画面などのときは何もしない */ }
+}
+function showUpdate(){
+  if(document.getElementById("upd")) return;
+  const el = document.createElement("div");
+  el.id = "upd"; el.className = "upd"; el.setAttribute("role","status");
+  el.innerHTML = `<span>新しい版があります</span><button>更新する</button>`;
+  el.querySelector("button").addEventListener("click", e=>{ e.stopPropagation(); applyUpdate(el); });
+  document.body.appendChild(el);
+}
+async function applyUpdate(el){
+  el.querySelector("button").disabled = true; el.querySelector("span").textContent = "読み込み中…";
+  try{
+    const res = await fetch("index.html", {cache:"reload"});
+    const text = await res.text();
+    if(!res.ok || res.redirected || !text.includes("fantastique-kyoso3")) throw 0;
+    const keys = (await caches.keys()).filter(k=>k.startsWith("fantastique-"));
+    for(const k of keys){
+      const c = await caches.open(k);
+      await c.put(new URL("index.html", location.href).href, new Response(text, {headers:{"Content-Type":"text/html; charset=utf-8"}}));
+    }
+    const reg = await navigator.serviceWorker.getRegistration(); if(reg) reg.update().catch(()=>{});
+    location.reload();
+  }catch(e){
+    el.querySelector("button").disabled = false; el.querySelector("span").textContent = "更新できませんでした。通信を確かめてください";
+  }
 }
 </script>
 </body>

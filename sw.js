@@ -1,13 +1,21 @@
 // 幻想交響曲 事前学習アプリ — オフライン用 Service Worker
-// つながっているときは常に最新版を取りに行き、つながらないとき（または応答が遅いとき）だけ保存済みの版を出す。
-const CACHE = "fantastique-b5857c4166";
+// 端末に保存した版をすぐに出す（速く、確実に開く）。新しい版の確認と切り替えは、ページ側で行う。
+const CACHE = "fantastique-3e2eb91454";
 const PAGE = "./index.html";
-const TIMEOUT_MS = 4000;  // ロビーなどで回線が混んでいるときは、4秒待って保存済みの版に切り替える
+const MARK = "fantastique-kyoso3";  // 本物のアプリの中身にだけ含まれる目印（Wi-Fiのログイン画面などを保存しないため）
+
+async function fetchGenuine() {
+  const res = await fetch(PAGE, { cache: "reload" });
+  if (!res.ok || res.redirected) throw new Error("bad response");
+  const text = await res.text();
+  if (!text.includes(MARK)) throw new Error("not the app");
+  return new Response(text, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
-    caches.open(CACHE)
-      .then((c) => c.add(new Request(PAGE, { cache: "reload" })))
+    fetchGenuine()
+      .then((res) => caches.open(CACHE).then((c) => c.put(PAGE, res)))
       .then(() => self.skipWaiting())
   );
 });
@@ -20,23 +28,12 @@ self.addEventListener("activate", (e) => {
   );
 });
 
+// 画面を開くとき：保存した版があればそれを出す。なければ通信で取りに行く。
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET" || req.mode !== "navigate" || new URL(req.url).origin !== location.origin) return;
   e.respondWith((async () => {
-    const cache = await caches.open(CACHE);
-    // GitHub Pages のブラウザ側キャッシュ（約10分）を飛ばして、必ずサーバーに確かめる
-    const net = fetch(PAGE, { cache: "no-cache" }).then((res) => {
-      if (res.ok) cache.put(PAGE, res.clone());
-      return res;
-    });
-    const timeout = new Promise((resolve) => setTimeout(resolve, TIMEOUT_MS));
-    try {
-      const res = await Promise.race([net, timeout]);
-      if (res && res.ok) return res;
-    } catch (err) { /* 通信なし */ }
-    const hit = await cache.match(PAGE);
-    if (hit) return hit;
-    return net;  // 保存済みの版もなければ、通信の結果をそのまま待つ
+    const hit = await caches.match(PAGE);
+    return hit || fetch(req);
   })());
 });
