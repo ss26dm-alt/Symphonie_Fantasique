@@ -379,7 +379,11 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(false
 const CONCERT_START = Date.UTC(2027,0,9,4,30);   // 13:30 JST
 const CONCERT_END   = Date.UTC(2027,0,9,7,0);    // 16:00 JST
 const TEST_CONCERT = new URLSearchParams(location.search).get("test")==="concert";  // 見た目の確認用
-const inConcert = () => TEST_CONCERT || (Date.now()>=CONCERT_START && Date.now()<CONCERT_END);
+// 試験用の時間帯：2026年11月11日 22:05〜22:10（日本時間）。試験が済んだら消してよい。
+const TRIAL_START = Date.UTC(2026,10,11,13,5);   // 22:05 JST
+const TRIAL_END   = Date.UTC(2026,10,11,13,10);  // 22:10 JST
+const inWindow = (a,b) => Date.now()>=a && Date.now()<b;
+const inConcert = () => TEST_CONCERT || inWindow(CONCERT_START,CONCERT_END) || inWindow(TRIAL_START,TRIAL_END);
 let guardEl = null;
 function showGuard(id){
   closeGuard();
