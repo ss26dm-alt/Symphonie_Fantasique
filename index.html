@@ -157,7 +157,8 @@ h1{font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.45;marg
 .gbox img{width:56%;max-width:190px;height:auto;border-radius:12px;display:block;margin:0 auto 12px}
 .gbox p{font-size:15px;line-height:1.8;margin:0 0 16px;text-align:left}
 .gstop{display:block;width:100%;border:0;border-radius:14px;background:#2a2622;color:#fffdf8;font-size:17px;font-weight:600;padding:16px}
-.gplay{display:inline-block;margin-top:10px;border:0;background:none;color:#8a8076;font-size:13px;padding:8px 12px;text-decoration:underline}
+.gplay{display:inline-block;margin-top:12px;border:1px solid #cfc6b8;border-radius:10px;background:#f3eee6;color:#5a5249;font-size:13px;padding:7px 18px}
+.gplay:active{background:#e6dfd3}
 
 .upd{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:15;max-width:536px;margin:0 auto;
   display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--ink);color:var(--bg);border-radius:14px;padding:10px 10px 10px 16px;font-size:14px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
@@ -441,7 +442,7 @@ function showGuard(id){
   guardEl.className = "guard"; guardEl.setAttribute("role","alertdialog"); guardEl.setAttribute("aria-modal","true");
   guardEl.innerHTML = `<div class="gbox">
     <img src="${EXTRA.bow}" alt="">
-    <p>本日はご来場いただきありがとうございます。開演時間帯の音源再生は、休憩時間中またはロビーにてお願いいたします。</p>
+    <p>本日はご来場ありがとうございます。開演時間帯の音源再生は、休憩時間またはロビーにてお願いいたします（この表示は16:00に解除されます）。</p>
     <button class="gstop" data-g="stop">再生を中止する</button>
     <button class="gplay" data-g="play">再生する</button></div>`;
   const shownAt = Date.now();
@@ -487,12 +488,12 @@ function route(){
 }
 window.addEventListener("hashchange", ()=>{ route(); window.scrollTo(0,0); });
 document.getElementById("parentimg").src = EXTRA.kyoso3;
-document.getElementById("ver").textContent = "版：2026-11-13 21:34" + (TEST_CONCERT ? "　試験モード（本番時間帯として動作中）" : "");
+document.getElementById("ver").textContent = "版：2026-11-13 21:47" + (TEST_CONCERT ? "　試験モード（本番時間帯として動作中）" : "");
 route();
 
 /* ---------- オフラインと更新 ---------- */
 // 端末に保存した版をすぐ出し、裏で version.json を見て新しい版があれば知らせる。押すと切り替える。
-const APP_VER = "e37cfc9767";
+const APP_VER = "801dbaa3ba";
 if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
   setTimeout(checkUpdate, 1500);

@@ -1,6 +1,6 @@
 // 幻想交響曲 事前学習アプリ — オフライン用 Service Worker
 // 端末に保存した版をすぐに出す（速く、確実に開く）。新しい版の確認と切り替えは、ページ側で行う。
-const CACHE = "fantastique-e37cfc9767";
+const CACHE = "fantastique-801dbaa3ba";
 const PAGE = "./index.html";
 const MARK = "fantastique-kyoso3";  // 本物のアプリの中身にだけ含まれる目印（Wi-Fiのログイン画面などを保存しないため）
 
